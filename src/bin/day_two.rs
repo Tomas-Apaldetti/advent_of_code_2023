@@ -7,17 +7,35 @@ fn main() -> std::io::Result<()>{
     .iter()
     .filter_map(|line|{
         let game_info = game_information(line).ok()?;
-        if is_possible(&game_info.1, &[("red", 12), ("green", 13), ("blue", 14)]){
-            Some(game_info.0)
-        }else{
-            None
-        }
+        let minimum_set = get_minimum_cubes(&game_info.1);
+        minimum_set.into_values().reduce(|acc, x| acc * x)
     })
     .sum();
 
     println!("Result: {}", a);
 
     Ok(())
+}
+
+fn get_minimum_cubes(rounds: &[GameInfo]) -> GameInfo{
+    let mut result = HashMap::new();
+
+    for round in rounds{
+        for (cube, amount) in round{
+            match result.get(cube){
+                Some(curr_amount) => {
+                    if curr_amount < amount {
+                        let _ = result.insert(cube.to_owned(), *amount);
+                    }
+                },
+                None => {
+                    let _ = result.insert(cube.to_owned(), *amount);
+                },
+            }
+        }
+    }
+
+    result
 }
 
 fn is_possible(rounds: &[GameInfo], needs: &[(&str, usize)]) -> bool{
